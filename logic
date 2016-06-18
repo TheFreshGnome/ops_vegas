@@ -1,0 +1,254 @@
+[code]
+#define buttonPin 11  //initialize ports
+#define led1B 1
+#define led1G 2
+#define led1R 3
+#define led2B 4 
+#define led2G 5 
+#define led2R 6
+#define led3B 7
+#define led3G 8
+#define led3R 9
+#define led13 13  //debugger
+
+int state = 1; 
+const int light1[3] = {led1B, led1G, led1R}; //{123};
+int instantlight1=0;
+const int light2[3] = {4, 5, 6};
+int instantlight2=0;
+const int light3[3] = {7, 8, 9};
+int instantlight3=0;
+int buttonState = 0;
+
+const int lightOne[3] = {3, 5, 7};
+const int lightTwo[3] = {1, 6, 8};
+const int lightThree[3] = {2, 4, 9};
+int all[9] = {1,2,3,4,5,6,7,8,9};
+int dummy[3]={1,2,3};
+int j;
+int k;
+int L;
+long debounce_time = 200;
+unsigned long last_micros;
+
+void switchState(){
+  if(state == 1){
+    instantlight1 = light1[j];
+    dummy[0]=instantlight1;    
+  }
+  else if(state == 2){
+   instantlight2 = light2[k];
+   dummy[1] = instantlight2;   
+ }
+  else if(state == 3){
+  instantlight3 = light3[L];
+  dummy[2] = instantlight3;
+  }
+  state = state + 1;
+  if(state > 3){
+    state = 1;
+  }
+}
+
+void allOff(){
+  digitalWrite(led1B, LOW);
+  digitalWrite(led1G, LOW);
+  digitalWrite(led1R, LOW);
+  digitalWrite(led2B, LOW);
+  digitalWrite(led2G, LOW);
+  digitalWrite(led2R, LOW);
+  digitalWrite(led3B, LOW);
+  digitalWrite(led3G, LOW);
+  digitalWrite(led3R, LOW);
+  digitalWrite(led13, LOW);
+  delay(100);
+}
+
+void cycleAll(int& a){                  //STATE1
+  a = 2;
+  for(int i = 0; i < 3; i++){       //light1[]={led1B, 1G, 1R};
+  digitalWrite(lightOne[i], HIGH);    //lightOne[3] = {3, 5, 7};
+  }
+  delay(2000);
+  allOff();
+  a= 0;
+  for(int i = 0; i < 3; i++){       
+  digitalWrite(lightTwo[i], HIGH);    //lightTwo[3] = {1, 6, 8};
+  }
+  delay(2000);
+  allOff();
+  a= 1;
+  for(int i = 0; i < 3; i++){       
+  digitalWrite(lightThree[i], HIGH);    //lightThree[3] = {2, 4, 9};
+  }
+  delay(2000);
+  allOff();      
+}
+
+void cycle2(int& b){                 //STATE2
+  b = 1;                  //light2[3] = {4,5,6}; (2B,2G,2R)
+  digitalWrite(led13, HIGH);
+  digitalWrite(instantlight1, HIGH);
+  delay(1000);
+  digitalWrite(led2G, HIGH);
+  digitalWrite(led3B , HIGH);
+  delay(1000);
+  digitalWrite(led2G, LOW);
+  b = 0;
+  digitalWrite(led3B, LOW);
+  delay(100);
+  digitalWrite(led2B, HIGH);
+  digitalWrite(led3R, HIGH);
+  delay(1000);
+  digitalWrite(led2B, LOW);
+  b = 2;
+  digitalWrite(led3R, LOW);
+  delay(100);
+  digitalWrite(led2R, HIGH);
+  digitalWrite(led3G, HIGH);
+  delay(1000);
+  digitalWrite(led2R, LOW);
+  digitalWrite(led3G, LOW); 
+  delay(100);
+  digitalWrite(led13, LOW); 
+  delay(100); 
+  
+}
+
+void cycle1(int& c){                         //STATE3
+  digitalWrite(led13, HIGH);
+  digitalWrite(instantlight1, HIGH);
+  digitalWrite(instantlight2, HIGH);
+  c = 0;
+  digitalWrite(led3B , HIGH);
+  delay(1000);
+  digitalWrite(led3B, LOW);
+  c = 2;
+  delay(100);
+  digitalWrite(led3R, HIGH);
+  delay(1000);
+  digitalWrite(led3R, LOW);
+  c = 1;
+  delay(100);
+  digitalWrite(led3G, HIGH);
+  delay(1000);
+  digitalWrite(led3G, LOW); 
+  delay(100);
+  
+}
+
+void wrong(){
+ 
+  digitalWrite(led1R, HIGH);
+  digitalWrite(led2R, HIGH);
+  digitalWrite(led3R, HIGH);
+  delay(1000);
+  allOff();
+  digitalWrite(led1R, HIGH);
+  digitalWrite(led2R, HIGH);
+  digitalWrite(led3R, HIGH);
+  delay(100);
+  allOff();  
+  digitalWrite(led1R, HIGH);
+  digitalWrite(led2R, HIGH);
+  digitalWrite(led3R, HIGH);
+  delay(1000);
+  allOff();
+  digitalWrite(led1R, HIGH);
+  digitalWrite(led2R, HIGH);
+  digitalWrite(led3R, HIGH);
+  delay(100);
+  allOff();  
+  Serial.println("Nay");
+}
+
+
+void right(){
+  
+  digitalWrite(led1G, HIGH);
+  digitalWrite(led2G, HIGH);
+  digitalWrite(led3G, HIGH);
+  delay(1000);
+  allOff();
+  digitalWrite(led1G, HIGH);
+  digitalWrite(led2G, HIGH);
+  digitalWrite(led3G, HIGH);
+  delay(100);
+  allOff();  
+  digitalWrite(led1G, HIGH);
+  digitalWrite(led2G, HIGH);
+  digitalWrite(led3G, HIGH);
+  delay(1000);
+  allOff();
+  digitalWrite(led1G, HIGH);
+  digitalWrite(led2G, HIGH);
+  digitalWrite(led3G, HIGH);
+  delay(100);
+  allOff();  
+  Serial.println("Yay");
+ 
+}
+
+
+void debounce(){  
+  if((long)(millis() - last_micros) >= debounce_time){
+    switchState();
+    last_micros = millis();
+  }
+}
+
+
+
+void setup(){
+  Serial.begin(9600);
+  pinMode(buttonPin, INPUT);
+  attachInterrupt(buttonPin, debounce, RISING); 
+  pinMode(led1B, OUTPUT); 
+  pinMode(led1G, OUTPUT); 
+  pinMode(led1R, OUTPUT);
+  pinMode(led2B, OUTPUT); 
+  pinMode(led2G, OUTPUT); 
+  pinMode(led2R, OUTPUT); 
+  pinMode(led3B, OUTPUT);   
+  pinMode(led3G, OUTPUT);   
+  pinMode(led3R, OUTPUT);    
+  pinMode(led13, OUTPUT); 
+  buttonState = digitalRead(buttonPin);
+}
+
+void loop(){  
+   while(state == 1){
+    cycleAll(j);
+    }
+   
+   while(state == 2){
+    cycle2(k);
+    }
+   
+  
+  while(state == 3){
+    cycle1(L);
+   }
+    delay(500);
+  if(dummy[0] +3 == dummy[1] && dummy[1] +3 == dummy[2] ){
+   
+    digitalWrite(instantlight1, HIGH);
+    digitalWrite(instantlight2, HIGH);
+    digitalWrite(instantlight3, HIGH);
+     delay(1000);
+     allOff();
+  right();  
+}
+else{
+  digitalWrite(instantlight1, HIGH);
+    digitalWrite(instantlight2, HIGH);
+    digitalWrite(instantlight3, HIGH);
+     delay(1000);
+     allOff();
+  wrong();
+}
+
+delay(500);
+}
+
+[/code]
